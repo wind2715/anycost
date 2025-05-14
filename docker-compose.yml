@@ -1,0 +1,20 @@
+# docker-compose.yml
+version: '3'
+
+services:
+  anycost-gan:
+    build: .
+    ports:
+      - "80:80"
+    volumes:
+      - ./models:/app/models
+      - ./uploads:/app/backend/uploads
+      - ./results:/app/backend/results
+      - ./latents:/app/backend/latents
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

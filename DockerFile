@@ -1,0 +1,40 @@
+FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
+
+# Đặt biến môi trường để tránh tương tác trong quá trình cài đặt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Cài đặt các gói cần thiết
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-dev \
+    git \
+    wget \
+    nginx \
+    && rm -rf /var/lib/apt/lists/*
+
+# Tạo liên kết tượng trưng cho python
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Tạo thư mục làm việc
+WORKDIR /app
+
+# Sao chép requirements và cài đặt dependencies
+COPY backend/requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Sao chép mã nguồn
+COPY . .
+
+# Cấu hình Nginx
+RUN rm /etc/nginx/sites-enabled/default
+COPY nginx.conf /etc/nginx/sites-available/
+RUN ln -s /etc/nginx/sites-available/nginx.conf /etc/nginx/sites-enabled/
+
+# Đảm bảo quyền thực thi cho start script
+RUN chmod +x start.sh
+
+# Mở cổng
+EXPOSE 80
+
+# Chạy start script
+CMD ["./start.sh"]
